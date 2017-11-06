@@ -3,8 +3,15 @@ import java.util.*;
 public class Kefa{
 
     static int result = 0;
-    static HashMap<Integer, ArrayList<Integer>> hashmap = new HashMap();
+    public static class Park{
+        ArrayList<Integer> adjList;
+        public Park(){
+            adjList = new ArrayList<Integer>();
+        }
+    }
     static int[] nodes;
+    static boolean[] visited;
+    static Park[] parks;
 
     public static void main(String[] args){
         Scanner sc = new Scanner(System.in);
@@ -15,58 +22,61 @@ public class Kefa{
 
         line = sc.nextLine();
         nodes = new int[n];
+        visited = new boolean[n];
+
         String[] arr = line.split(" ");
         for(int i = 0; i < n; i+=1){
             nodes[i] = Integer.parseInt(arr[i]);
+            visited[i] = false;
         }
 
-        hashmap = new HashMap();
-
+        parks = new Park[n];
         for(int i = 0; i < n - 1; i +=1){
             line = sc.nextLine();
             int key = Integer.parseInt(line.split(" ")[0]);
             int value = Integer.parseInt(line.split(" ")[1]);
-            addElement(hashmap, key, value);
-            addElement(hashmap, value, key);
+            if(parks[key -1] == null)
+                parks[key -1] = new Park();
+
+            if(parks[value -1] == null)
+                parks[value -1] = new Park();
+
+            parks[key - 1].adjList.add(value);
+            parks[value - 1].adjList.add(key);
         }
 
-        dfs(1, 0, m, 0);
+        visited[0] = true;
+        dfs(1, m, 0);
         System.out.print(result);
 
     }
 
-    private static void dfs(int currentNode, int prev_node, int m, int cats){
+    private static void dfs(int currentNode, int m, int cats){
+
+        if(nodes[currentNode - 1] == 1){
+            cats +=1;
+        }else{
+            cats = 0;
+        }
+        ArrayList<Integer> adjList = parks[currentNode -1].adjList;
+
         if(cats > m){
             return;
         }
-
-        ArrayList<Integer> adjList = hashmap.get(currentNode);
-
-        if(adjList.size() == 1 && adjList.get(0) == prev_node){
-            if(nodes[currentNode - 1] + cats > m){
-                return;
-            }
+        if(adjList.size() == 1 && currentNode != 1){
             result+=1;
             return;
         }
 
+
         for(Integer adj : adjList){
-            if(adj == prev_node){
+            
+            if(visited[adj - 1]){
                 continue;
             }
-            if(nodes[currentNode - 1] == 0){
-                dfs(adj, currentNode, m, 0);
-            }else{
-                dfs(adj, currentNode, m, cats + 1);
-            }
+            visited[adj - 1] = true;
+            dfs(adj, m, cats);
         }
         return;
-    }
-
-    private static void addElement(HashMap<Integer, ArrayList<Integer>> hashmap, int key, int value){
-        if(!hashmap.containsKey(key)){
-            hashmap.put(key, new ArrayList());
-        }
-        hashmap.get(key).add(value);
     }
 }
